@@ -99,3 +99,95 @@ plt.title("Bayesian Network", fontsize=20)
 plt.axis("off")
 plt.tight_layout()
 plt.show()
+
+P_fb = G.nodes["fb"]["fb_y"]
+
+P_ab = {
+    1: G.nodes["ab"]["ab_y"],
+    0: G.nodes["ab"]["ab_n"],
+}
+
+P_no = {
+    1: G.nodes["no"]["no_y"],
+    0: G.nodes["no"]["no_n"],
+}
+
+P_bd = {
+    1: G.nodes["bd"]["ba_y_bd_y"] * G.nodes["ba"]["ba_y"] + G.nodes["bd"]["ba_n_bd_y"] * G.nodes["ba"]["ba_n"],
+    0: G.nodes["bd"]["ba_y_bd_n"] * G.nodes["ba"]["ba_y"] + G.nodes["bd"]["ba_n_bd_n"] * G.nodes["ba"]["ba_n"]
+}
+
+P_ab_fb_nc= {
+
+    (1, 1): G.nodes["nc"]["ab_y_fb_y_nc_y"],  # P(nc=1|fb=1,ab=1)
+    (1, 0): G.nodes["nc"]["ab_n_fb_y_nc_y"],# P(nc=1|fb=1,ab=0)
+    (0, 1): G.nodes["nc"]["ab_y_fb_y_nc_n"],# P(nc=0|fb=1,ab=1)
+    (0, 0): G.nodes["nc"]["ab_n_fb_y_nc_n"]  # P(nc=0|fb=1,ab=0)
+}
+
+
+P_bd_nc_bf = {
+
+    (1, 1, 1): G.nodes["bf"]["bd_y_nc_y_bf_y"], # P(bf=1|bd=1, nc=1)
+    (1, 1, 0): G.nodes["bf"]["bd_y_nc_n_bf_y"], # P(bf=1|bd=1, nc=0)
+    (1, 0, 1): G.nodes["bf"]["bd_n_nc_y_bf_y"],# P(bf=1|bd=0, nc=1)
+    (1, 0, 0): G.nodes["bf"]["bd_n_nc_n_bf_y"], # P(bf=1|bd=0, nc=0)
+    (0, 1, 1): G.nodes["bf"]["bd_y_nc_y_bf_n"],# P(bf=0|bd=1, nc=1)
+    (0, 1, 0): G.nodes["bf"]["bd_y_nc_n_bf_n"],  # P(bf=0|bd=1, nc=0)
+    (0, 0, 1): G.nodes["bf"]["bd_n_nc_y_bf_n"], # P(bf=0|bd=0, nc=1)
+    (0, 0, 0): G.nodes["bf"]["bd_n_nc_n_bf_n"],# P(bf=0|bd=0, nc=0)
+}
+
+P_bf_no_cws = {
+    (1, 1): G.nodes["cws"]["bf_y_no_y_cws_y"], # P(cws=1| bf=1,no=1)
+    (1, 0): G.nodes["cws"]["bf_y_no_n_cws_y"], # P(cws=1|bf=1, no=0)
+    (0, 1): G.nodes["cws"]["bf_n_no_y_cws_y"], # P(cws=1| bf=0,no=1)
+    (0, 0): G.nodes["cws"]["bf_n_no_n_cws_y"] # P(cws=1 | bf=0,no=0)
+}
+
+P_bf_no_cws_n = {
+
+    (1, 1): G.nodes["cws"]["bf_y_no_y_cws_n"], # P(cws=0| bf=1,no=1)
+    (1, 0): G.nodes["cws"]["bf_y_no_n_cws_n"],# P(cws=0|bf=1,no=0)
+    (0, 1): G.nodes["cws"]["bf_n_no_y_cws_n"],# P(cws=0|bf=0,no=1)
+    (0, 0): G.nodes["cws"]["bf_n_no_n_cws_n"]# P(cws=0| bf=0, no=0)
+}
+
+numer = 0.0
+for ab in [1, 0]:
+  for no in [1, 0]:
+    for bd in [1, 0]:
+      for nc in [1, 0]:
+        for bf in [1, 0]:
+            numer += (
+                 P_fb *
+                 P_ab[ab] *
+                 P_no[no] *
+                 P_bd[bd] *
+                 P_ab_fb_nc[(nc, ab)] *
+                 P_bd_nc_bf[(bf, bd, nc)] *
+                 P_bf_no_cws[(bf, no)]
+            )
+
+
+denom = 0.0
+for ab in [1, 0]:
+  for no in [1, 0]:
+    for bd in [1, 0]:
+      for nc in [1, 0]:
+        for bf in [1, 0]:
+            calc = (
+                P_fb *
+                P_ab[ab] *
+                P_no[no] *
+                P_bd[bd] *
+                P_ab_fb_nc[(nc, ab)] *
+                P_bd_nc_bf[(bf, bd, nc)]
+            )
+
+            denom += calc * P_bf_no_cws[(bf, no)]
+            denom += calc * P_bf_no_cws_n[(bf, no)]
+
+R2 = numer / denom
+
+print(f"P(+cws|+fb) = {R2:.6f}")
