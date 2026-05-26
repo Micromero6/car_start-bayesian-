@@ -54,3 +54,48 @@ G.add_edges_from([
     ("no", "cws"),
 ])
 
+
+#create the figure for Bayesian network
+
+pos = {
+    "ba": (0, 4),
+    "ab": (2, 4),
+    "fb": (4, 4),
+    "no": (5, 2),
+    "bd": (1, 3),
+    "nc": (3, 3),
+    "bf": (2, 2),
+    "dl": (6, 1),
+    "l": (0, 1),
+    "gg": (2, 1),
+    "cws": (4, 1),
+}
+
+
+labels = { 
+
+    "ba": "battery\nage",
+    "ab": "alternator\nbroken",
+    "fb": "fanbelt\nbroken",
+    "no": "no oil",
+    "bd": "battery\ndead",
+    "nc": "no charging",
+    "bf": "battery flat",
+    "dl": "dipstick",
+    "l": "lights",
+    "gg": "gas guage",
+    "cws": "car won't\nstart",
+}
+
+plt.figure(figsize=(8, 6))
+
+nx.draw_networkx_nodes(G, pos, node_size=2200, node_color="blue", linewidths=0.25)
+
+nx.draw_networkx_edges(G, pos, edgelist= G.edges, width=3, arrowstyle="->", arrowsize=50, connectionstyle="arc3,rad=0.05" )
+
+nx.draw_networkx_labels(G, pos, labels= labels, font_size=7, font_color="white", font_weight="bold")
+
+plt.title("Bayesian Network", fontsize=20)
+plt.axis("off")
+plt.tight_layout()
+plt.show()
